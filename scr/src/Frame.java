@@ -2,11 +2,10 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.lang.reflect.GenericArrayType;
+import java.awt.font.GraphicAttribute;
 import java.util.concurrent.atomic.AtomicReference;
 
 class Grapisc {
-    static final int INF = Integer.MAX_VALUE;
     int cordX, cordY, leng;
     static int conting;
 
@@ -28,24 +27,40 @@ class Grapisc {
     }
 
     public static Grapisc[][] addTop(Grapisc[][] graph, Grapisc hiu, Grapisc kaka, int ling) {
-        var len = graph.length;
-        int i, j;
-        for (i = 0; i < len; i++) {
-            if (graph[0][i].cordX == hiu.cordX && graph[0][i].cordY == hiu.cordY&&i<len-1) {
-                graph[0][i+1] = hiu;
-                conting++;
-                break;
+        int i = containsPoint(graph[0], hiu), j = containsPoint(graph[0], kaka);
+        if (i == -1) {
+            for (int h = 0; h < graph.length; h++) {
+                if (graph[0][h].cordX == -1) {
+                    graph[0][h] = hiu;
+                    i = h;
+                    break;
+                }
             }
+            Grapisc.conting++;
         }
-        for (j = 0; j < len; j++) {
-            if (graph[j][0].cordX == kaka.cordX && graph[j][0].cordY == kaka.cordY&&j<len-1) {
-                graph[j+1][0] = kaka;
-                conting++;
-                break;
+
+        if (j == -1) {
+            for (int h = 0; h < graph.length; h++) {
+                if (graph[0][h].cordX == -1) {
+                    graph[0][h] = kaka;
+                    j = h;
+                    break;
+                }
             }
+            Grapisc.conting++;
         }
+
         graph[i][j] = new Grapisc(ling);
         return graph;
+    }
+
+    private static int containsPoint(Grapisc[] graph, Grapisc point) {
+        for (int i = 0; i < graph.length; i++) {
+            if (graph[i].equals(point)) {
+                return i;
+            }
+        }
+        return -1;
     }
 
     public static void Floid(Grapisc[][] graph) {
@@ -100,20 +115,19 @@ public class Frame extends JFrame {
                     @Override
                     public void actionPerformed(ActionEvent e) {
                         JButton button = (JButton) e.getSource();
-                        Grapisc[][] graphic = graphicRef.get();
                         if (isCheck) {
                             Graphics g = getGraphics();
                             g.drawLine(X + 262, Y + 62, button.getX() + 262, button.getY() + 62);
                             isCheck = false;
-                            graphicRef.set(Grapisc.addTop(graphic, new Grapisc(X, Y), new Grapisc(button.getX(), button.getY()), Integer.parseInt(JOptionPane.showInputDialog(panel, "Введіть ваги", "Заповнення значення", JOptionPane.QUESTION_MESSAGE))));
-                            if (Grapisc.conting == tops) {
+                            graphicRef.set(Grapisc.addTop(graphicRef.get(), new Grapisc(X, Y), new Grapisc(button.getX(), button.getY()), Integer.parseInt(JOptionPane.showInputDialog(panel, "Введіть ваги", "Заповнення значення", JOptionPane.QUESTION_MESSAGE))));
+                            if (Grapisc.conting == tops+1) {
                                 panel.setVisible(false);
-                                Grapisc.Floid(graphic);
+                                Grapisc.Floid(graphicRef.get());
                             }
                         } else {
-                            if (Grapisc.conting == tops) {
+                            if (Grapisc.conting == tops+1) {
                                 panel.setVisible(false);
-                                Grapisc.Floid(graphic);
+                                Grapisc.Floid(graphicRef.get());
                             }
                             X = button.getX();
                             Y = button.getY();

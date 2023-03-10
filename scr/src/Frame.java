@@ -7,7 +7,7 @@ import java.util.concurrent.atomic.AtomicReference;
 
 class Grapisc {
     int cordX, cordY, leng;
-    static int conting;
+    static boolean isEnded = false;
 
     public Grapisc(int cordX, int cordY) {
         this.cordX = cordX;
@@ -24,33 +24,38 @@ class Grapisc {
     public Grapisc() {
         this.cordX = -1;
         this.cordY = -1;
+        this.leng = -1;
     }
 
     public static Grapisc[][] addTop(Grapisc[][] graph, Grapisc hiu, Grapisc kaka, int ling) {
         int i = containsPoint(graph[0], hiu), j = containsPoint(graph[0], kaka);
-        if (i == -1) {
-            for (int h = 0; h < graph.length; h++) {
-                if (graph[0][h].cordX == -1) {
-                    graph[0][h] = hiu;
-                    i = h;
-                    break;
+        if(!Grapisc.isEnded) {
+            if (i == -1) {
+                for (int h = 0; h < graph[0].length; h++) {
+                    if (graph[0][h].cordX == -1) {
+                        graph[0][h] = hiu;
+                        i = h;
+                        break;
+                    }
                 }
             }
-            Grapisc.conting++;
-        }
 
-        if (j == -1) {
-            for (int h = 0; h < graph.length; h++) {
-                if (graph[0][h].cordX == -1) {
-                    graph[0][h] = kaka;
-                    j = h;
-                    break;
+            if (j == -1) {
+                for (int h = 0; h < graph[0].length; h++) {
+                    if (graph[0][h].cordX == -1) {
+                        graph[0][h] = kaka;
+                        j = h;
+                        break;
+                    }
                 }
-            }
-            Grapisc.conting++;
-        }
 
-        graph[i][j] = new Grapisc(ling);
+            }
+        }
+        if (j == -1 || i == -1) {
+            Grapisc.isEnded = true;
+        } else {
+            graph[j][i] = new Grapisc(ling);
+        }
         return graph;
     }
 
@@ -64,11 +69,12 @@ class Grapisc {
     }
 
     public static void Floid(Grapisc[][] graph) {
-        int len = graph.length;
-        int[][] arr = new int[len - 1][len - 1];
-        for (int i = 1; i < len; i++) {
-            for (int j = 1; j < len; j++) {
-                arr[i - 1][j - 1] = graph[i][j].leng;
+        int len = graph[0].length;
+        int[][] arr = new int[len][len];
+        for (int i = 0; i < len; i++) {
+            for (int j = 0; j < len; j++) {//if(i==j)arr[i][j]=0;
+                arr[i][j] = graph[i+1][j].leng;
+
             }
         }
         for (int i = 0; i < arr.length; i++) {
@@ -82,7 +88,7 @@ class Grapisc {
     public static Grapisc[][] generateTwoDArray(Grapisc[][] graph) {
         int len = graph.length;
         for (int i = 0; i < len; i++) {
-            for (int j = 0; j < len; j++) {
+            for (int j = 0; j < len-1; j++) {
                 graph[i][j] = new Grapisc();
             }
         }
@@ -105,7 +111,7 @@ public class Frame extends JFrame {
 
     public void addCheckingButtons(int x, int y, int tops) {
         JPanel panel = new JPanel(null);
-        AtomicReference<Grapisc[][]> graphicRef = new AtomicReference<>(Grapisc.generateTwoDArray(new Grapisc[tops + 1][tops + 1]));
+        AtomicReference<Grapisc[][]> graphicRef = new AtomicReference<>(Grapisc.generateTwoDArray(new Grapisc[tops + 1][tops]));
         panel.setBounds(250, 25, x * 50, y * 50);
         for (int i = 0; i < y; i++) {
             for (int j = 0; j < x; j++) {
@@ -117,21 +123,22 @@ public class Frame extends JFrame {
                         JButton button = (JButton) e.getSource();
                         if (isCheck) {
                             Graphics g = getGraphics();
-                            g.drawLine(X + 262, Y + 62, button.getX() + 262, button.getY() + 62);
-                            isCheck = false;
-                            graphicRef.set(Grapisc.addTop(graphicRef.get(), new Grapisc(X, Y), new Grapisc(button.getX(), button.getY()), Integer.parseInt(JOptionPane.showInputDialog(panel, "Введіть ваги", "Заповнення значення", JOptionPane.QUESTION_MESSAGE))));
-                            if (Grapisc.conting == tops+1) {
-                                panel.setVisible(false);
+                            if (!Grapisc.isEnded) {
+                                g.drawLine(X + 262, Y + 62, button.getX() + 262, button.getY() + 62);
+                                isCheck = false;
+                                graphicRef.set(Grapisc.addTop(graphicRef.get(), new Grapisc(X, Y), new Grapisc(button.getX(), button.getY()), Integer.parseInt(JOptionPane.showInputDialog(panel, "Введіть ваги", "Заповнення значення", JOptionPane.QUESTION_MESSAGE))));
+                            }
+                           else {
                                 Grapisc.Floid(graphicRef.get());
                             }
                         } else {
-                            if (Grapisc.conting == tops+1) {
-                                panel.setVisible(false);
+                            if (Grapisc.isEnded) {
                                 Grapisc.Floid(graphicRef.get());
+                            } else {
+                                X = button.getX();
+                                Y = button.getY();
+                                isCheck = true;
                             }
-                            X = button.getX();
-                            Y = button.getY();
-                            isCheck = true;
                         }
                     }
                 });

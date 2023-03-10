@@ -38,7 +38,6 @@ class Grapisc {
                         break;
                     }
                 }
-                System.out.println('f');
             }
 
             if (j == -1) {

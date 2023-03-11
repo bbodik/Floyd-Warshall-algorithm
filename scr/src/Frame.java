@@ -2,7 +2,6 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.awt.font.GraphicAttribute;
 import java.util.concurrent.atomic.AtomicReference;
 
 class Grapisc {
@@ -78,7 +77,7 @@ class Grapisc {
                 if (i == j) arr[i][j] = -1;
             }
         }
-        arr=makeSymmetric(arr);
+        arr = makeSymmetric(arr);
         System.out.println("-------------------");
         for (int i = 0; i < arr.length; i++) {
             for (int j = 0; j < arr[i].length; j++) {
@@ -105,8 +104,13 @@ class Grapisc {
         for (int i = 0; i < n; i++) {
             for (int j = 0; j < n; j++) {
                 if (arr[i][j] != -1) {
-                    symmArr[i][j] = symmArr[j][i] = arr[i][j];
+                    if (i == j) symmArr[i][j] = 0;
+                    else {
+                        symmArr[i][j] = symmArr[j][i] = arr[i][j];
+                        if(symmArr[i][j]==0)symmArr[i][j]=-1;
+                    }
                 }
+
             }
         }
         return symmArr;
@@ -143,7 +147,7 @@ public class Frame extends JFrame {
                             if (!Grapisc.isEnded) {
                                 g.drawLine(X + 262, Y + 62, button.getX() + 262, button.getY() + 62);
                                 isCheck = false;
-                                graphicRef.set(Grapisc.addTop(graphicRef.get(), new Grapisc(X, Y), new Grapisc(button.getX(), button.getY()), Integer.parseInt(JOptionPane.showInputDialog(panel, "Введіть ваги", "Заповнення значення", JOptionPane.QUESTION_MESSAGE))));
+                                graphicRef.set(Grapisc.addTop(graphicRef.get(), new Grapisc(X, Y), new Grapisc(button.getX(), button.getY()), Integer.parseInt(JOptionPane.showInputDialog(panel, "Введіть довжину", "Заповнення значення", JOptionPane.QUESTION_MESSAGE))));
                             } else {
                                 Grapisc.Floid(graphicRef.get());
                             }

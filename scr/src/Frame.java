@@ -28,8 +28,9 @@ class Grapisc {
 
     public static Grapisc[][] addTop(Grapisc[][] graph, Grapisc hiu, Grapisc kaka, int ling) {
         int i = containsPoint(graph[0], hiu), j = containsPoint(graph[0], kaka);
-        System.out.println(i + " " + j);
         if (!Grapisc.isEnded) {
+            Graphics g = ;
+            g.drawLine(hiu.cordX + 262, hiu.cordY, kaka.cordX + 62, kaka.cordY + 262);
             if (i == -1) {
                 for (int h = 0; h < graph[0].length; h++) {
                     if (graph[0][h].cordX == -1) {
@@ -107,9 +108,9 @@ class Grapisc {
                     if (i == j) symmArr[i][j] = 0;
                     else {
                         symmArr[i][j] = symmArr[j][i] = arr[i][j];
-                        if(symmArr[i][j]==0)symmArr[i][j]=-1;
                     }
-                }
+                } else if (i == j) symmArr[i][j] = 0;
+                else symmArr[i][j] = -1;
 
             }
         }
@@ -134,6 +135,26 @@ public class Frame extends JFrame {
         JPanel panel = new JPanel(null);
         AtomicReference<Grapisc[][]> graphicRef = new AtomicReference<>(Grapisc.generateTwoDArray(new Grapisc[tops + 1][tops]));
         panel.setBounds(250, 25, x * 50, y * 50);
+        JButton readyButton = new JButton();
+        readyButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                if (Grapisc.isEnded) {
+                    Grapisc.Floid(graphicRef.get());
+                }
+            }
+        });
+        Thread t = new Thread(() -> {
+            if (Grapisc.isEnded) readyButton.setBackground(Color.RED);
+            try {
+                Thread.sleep(1000);
+            } catch (InterruptedException e) {
+                System.out.println("mistake in Thread");
+            }
+        });
+        t.start();
+        readyButton.setBounds(10, 10, 230, 60);
+        this.add(readyButton);
         for (int i = 0; i < y; i++) {
             for (int j = 0; j < x; j++) {
                 JButton butt = new JButton();
@@ -143,25 +164,17 @@ public class Frame extends JFrame {
                     public void actionPerformed(ActionEvent e) {
                         JButton button = (JButton) e.getSource();
                         if (isCheck) {
-                            Graphics g = getGraphics();
-                            if (!Grapisc.isEnded) {
-                                g.drawLine(X + 262, Y + 62, button.getX() + 262, button.getY() + 62);
-                                isCheck = false;
-                                graphicRef.set(Grapisc.addTop(graphicRef.get(), new Grapisc(X, Y), new Grapisc(button.getX(), button.getY()), Integer.parseInt(JOptionPane.showInputDialog(panel, "Введіть довжину", "Заповнення значення", JOptionPane.QUESTION_MESSAGE))));
-                            } else {
-                                Grapisc.Floid(graphicRef.get());
-                            }
+
+                            isCheck = false;
+                            graphicRef.set(Grapisc.addTop(graphicRef.get(), new Grapisc(X, Y), new Grapisc(button.getX(), button.getY()), Integer.parseInt(JOptionPane.showInputDialog(panel, "Введіть довжину", "Заповнення значення", JOptionPane.QUESTION_MESSAGE))));
                         } else {
-                            if (Grapisc.isEnded) {
-                                Grapisc.Floid(graphicRef.get());
-                            } else {
-                                X = button.getX();
-                                Y = button.getY();
-                                isCheck = true;
-                            }
+                            X = button.getX();
+                            Y = button.getY();
+                            isCheck = true;
                         }
                     }
                 });
+
                 panel.add(butt);
             }
         }

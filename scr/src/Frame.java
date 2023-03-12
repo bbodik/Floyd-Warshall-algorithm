@@ -1,8 +1,5 @@
 import javax.swing.*;
 import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.util.Arrays;
 import java.util.concurrent.atomic.AtomicReference;
 
 class Grapisc {
@@ -55,7 +52,8 @@ class Grapisc {
             graph[j + 1][i] = new Grapisc(ling);
         }
         if (!Grapisc.isEnded || (i != -1 && j != -1)) {
-            g.drawLine(hiu.cordX + 5, hiu.cordY + 5, kaka.cordX + 5, kaka.cordY + 5);
+            g.drawLine(hiu.cordX + 262, hiu.cordY + 62, kaka.cordX + 262, kaka.cordY + 62);
+
         }
         return graph;
     }
@@ -69,7 +67,7 @@ class Grapisc {
         return -1;
     }
 
-    public static String Floid(Grapisc[][] graph) {
+    public static JTextArea Floid(Grapisc[][] graph) {
         int len = graph[0].length;
         int[][] arr = new int[len][len];
         for (int i = 0; i < len; i++) {
@@ -79,14 +77,16 @@ class Grapisc {
             }
         }
         arr = makeSymmetric(arr);
-        String txt="";
+        JTextArea textArea = new JTextArea();
+        textArea.setBounds(10,50,230,400);
         for (int i = 0; i < arr.length; i++) {
             for (int j = 0; j < arr[i].length; j++) {
-                txt+=arr[i][j] + "\t";
+                textArea.append(arr[i][j] + "  ");
             }
-            txt+="\n";
+            textArea.append("\n");
         }
-        return txt;
+        return textArea;
+
     }
 
     public static Grapisc[][] generateTwoDArray(Grapisc[][] graph) {
@@ -136,18 +136,17 @@ public class Frame extends JFrame {
         JPanel panel = new JPanel(null);
         AtomicReference<Grapisc[][]> graphicRef = new AtomicReference<>(Grapisc.generateTwoDArray(new Grapisc[tops + 1][tops]));
         panel.setBounds(250, 25, x * 50, y * 50);
-        JButton readyButton = new JButton("Граф закінчено. Розрахувати!");
-        readyButton.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                if (Grapisc.isEnded) {
-                    JPanel pan=new JPanel();
-                    pan.setBounds(10,250,230,frame.getY()-10);
-                    pan.setVisible(true);
-                    JLabel lbl = new JLabel(Grapisc.Floid(graphicRef.get()));
-                    pan.add(lbl);
-                    frame.add(pan);
-                }
+        JButton readyButton = new JButton();
+        readyButton.addActionListener(e -> {
+            if (Grapisc.isEnded) {
+                readyButton.setVisible(false);
+                JLabel lbl1 = new JLabel("Матриця Вагів:");
+                lbl1.setBounds(10,25,230,25);
+                lbl1.setLayout(null);
+                frame.add(Grapisc.Floid(graphicRef.get()));
+                frame.add(lbl1);
+                frame.repaint(10,50,230,400);
+
             }
         });
         Thread t = new Thread(() -> {
@@ -173,19 +172,15 @@ public class Frame extends JFrame {
             for (int j = 0; j < x; j++) {
                 JButton butt = new JButton();
                 butt.setBounds(j * 50, i * 50, 10, 10);
-                butt.addActionListener(new ActionListener() {
-                    @Override
-                    public void actionPerformed(ActionEvent e) {
-                        JButton button = (JButton) e.getSource();
-                        if (isCheck) {
-
-                            isCheck = false;
-                            graphicRef.set(Grapisc.addTop(graphicRef.get(), new Grapisc(X, Y), new Grapisc(button.getX(), button.getY()), Integer.parseInt(JOptionPane.showInputDialog(panel, "Введіть довжину", "Заповнення значення", JOptionPane.QUESTION_MESSAGE)), panel.getGraphics()));
-                        } else {
-                            X = button.getX();
-                            Y = button.getY();
-                            isCheck = true;
-                        }
+                butt.addActionListener(e -> {
+                    JButton button = (JButton) e.getSource();
+                    if (isCheck) {
+                        isCheck = false;
+                        graphicRef.set(Grapisc.addTop(graphicRef.get(), new Grapisc(X, Y), new Grapisc(button.getX(), button.getY()), Integer.parseInt(JOptionPane.showInputDialog(panel, "Введіть довжину", "Заповнення значення", JOptionPane.QUESTION_MESSAGE)), frame.getGraphics()));
+                    } else {
+                        X = button.getX();
+                        Y = button.getY();
+                        isCheck = true;
                     }
                 });
 

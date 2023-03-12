@@ -2,6 +2,7 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.util.Arrays;
 import java.util.concurrent.atomic.AtomicReference;
 
 class Grapisc {
@@ -26,36 +27,35 @@ class Grapisc {
         this.leng = -1;
     }
 
-    public static Grapisc[][] addTop(Grapisc[][] graph, Grapisc hiu, Grapisc kaka, int ling) {
+    public static Grapisc[][] addTop(Grapisc[][] graph, Grapisc hiu, Grapisc kaka, int ling, Graphics g) {
         int i = containsPoint(graph[0], hiu), j = containsPoint(graph[0], kaka);
-        if (!Grapisc.isEnded) {
-            Graphics g = ;
-            g.drawLine(hiu.cordX + 262, hiu.cordY, kaka.cordX + 62, kaka.cordY + 262);
-            if (i == -1) {
-                for (int h = 0; h < graph[0].length; h++) {
-                    if (graph[0][h].cordX == -1) {
-                        graph[0][h] = hiu;
-                        i = h;
-                        break;
-                    }
+        if (i == -1 && !Grapisc.isEnded) {
+            for (int h = 0; h < graph[0].length; h++) {
+                if (graph[0][h].cordX == -1) {
+                    graph[0][h] = hiu;
+                    i = h;
+                    break;
+                }
+            }
+        }
+
+        if (j == -1 && !Grapisc.isEnded) {
+            for (int h = 0; h < graph[0].length; h++) {
+                if (graph[0][h].cordX == -1) {
+                    graph[0][h] = kaka;
+                    j = h;
+                    break;
                 }
             }
 
-            if (j == -1) {
-                for (int h = 0; h < graph[0].length; h++) {
-                    if (graph[0][h].cordX == -1) {
-                        graph[0][h] = kaka;
-                        j = h;
-                        break;
-                    }
-                }
-
-            }
         }
         if (j == -1 || i == -1) {
             Grapisc.isEnded = true;
         } else {
             graph[j + 1][i] = new Grapisc(ling);
+        }
+        if (!Grapisc.isEnded || (i != -1 && j != -1)) {
+            g.drawLine(hiu.cordX + 5, hiu.cordY + 5, kaka.cordX + 5, kaka.cordY + 5);
         }
         return graph;
     }
@@ -69,7 +69,7 @@ class Grapisc {
         return -1;
     }
 
-    public static void Floid(Grapisc[][] graph) {
+    public static String Floid(Grapisc[][] graph) {
         int len = graph[0].length;
         int[][] arr = new int[len][len];
         for (int i = 0; i < len; i++) {
@@ -79,14 +79,14 @@ class Grapisc {
             }
         }
         arr = makeSymmetric(arr);
-        System.out.println("-------------------");
+        String txt="";
         for (int i = 0; i < arr.length; i++) {
             for (int j = 0; j < arr[i].length; j++) {
-                System.out.print(arr[i][j] + " ");
+                txt+=arr[i][j] + "\t";
             }
-            System.out.println();
+            txt+="\n";
         }
-        System.out.println("-------------------");
+        return txt;
     }
 
     public static Grapisc[][] generateTwoDArray(Grapisc[][] graph) {
@@ -101,21 +101,21 @@ class Grapisc {
 
     public static int[][] makeSymmetric(int[][] arr) {
         int n = arr.length;
-        int[][] symmArr = new int[n][n];
         for (int i = 0; i < n; i++) {
-            for (int j = 0; j < n; j++) {
-                if (arr[i][j] != -1) {
-                    if (i == j) symmArr[i][j] = 0;
-                    else {
-                        symmArr[i][j] = symmArr[j][i] = arr[i][j];
-                    }
-                } else if (i == j) symmArr[i][j] = 0;
-                else symmArr[i][j] = -1;
-
+            for (int j = i + 1; j < n; j++) {
+                if (arr[i][j] == -1 && arr[j][i] != -1) {
+                    arr[i][j] = arr[j][i];
+                } else if (arr[i][j] != -1 && arr[j][i] == -1) {
+                    arr[j][i] = arr[i][j];
+                }
             }
         }
-        return symmArr;
+        for (int i = 0; i < n; i++) {
+            arr[i][i] = 0;
+        }
+        return arr;
     }
+
 }
 
 public class Frame extends JFrame {
@@ -132,29 +132,43 @@ public class Frame extends JFrame {
     }
 
     public void addCheckingButtons(int x, int y, int tops) {
+        JFrame frame=this;
         JPanel panel = new JPanel(null);
         AtomicReference<Grapisc[][]> graphicRef = new AtomicReference<>(Grapisc.generateTwoDArray(new Grapisc[tops + 1][tops]));
         panel.setBounds(250, 25, x * 50, y * 50);
-        JButton readyButton = new JButton();
+        JButton readyButton = new JButton("Граф закінчено. Розрахувати!");
         readyButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
                 if (Grapisc.isEnded) {
-                    Grapisc.Floid(graphicRef.get());
+                    JPanel pan=new JPanel();
+                    pan.setBounds(10,250,230,frame.getY()-10);
+                    pan.setVisible(true);
+                    JLabel lbl = new JLabel(Grapisc.Floid(graphicRef.get()));
+                    pan.add(lbl);
+                    frame.add(pan);
                 }
             }
         });
         Thread t = new Thread(() -> {
-            if (Grapisc.isEnded) readyButton.setBackground(Color.RED);
+            readyButton.setBackground(Color.RED);
+            readyButton.setText("Розрахувати неможливо");
+            while (true) {
+                if (Grapisc.isEnded) {
+                    readyButton.setBackground(Color.GREEN);
+                    readyButton.setText("Розрахувати!");
+                    break;
+                }
             try {
-                Thread.sleep(1000);
+                Thread.sleep(10);
             } catch (InterruptedException e) {
                 System.out.println("mistake in Thread");
             }
+        }
         });
-        t.start();
         readyButton.setBounds(10, 10, 230, 60);
-        this.add(readyButton);
+        frame.add(readyButton);
+        t.start();
         for (int i = 0; i < y; i++) {
             for (int j = 0; j < x; j++) {
                 JButton butt = new JButton();
@@ -166,7 +180,7 @@ public class Frame extends JFrame {
                         if (isCheck) {
 
                             isCheck = false;
-                            graphicRef.set(Grapisc.addTop(graphicRef.get(), new Grapisc(X, Y), new Grapisc(button.getX(), button.getY()), Integer.parseInt(JOptionPane.showInputDialog(panel, "Введіть довжину", "Заповнення значення", JOptionPane.QUESTION_MESSAGE))));
+                            graphicRef.set(Grapisc.addTop(graphicRef.get(), new Grapisc(X, Y), new Grapisc(button.getX(), button.getY()), Integer.parseInt(JOptionPane.showInputDialog(panel, "Введіть довжину", "Заповнення значення", JOptionPane.QUESTION_MESSAGE)), panel.getGraphics()));
                         } else {
                             X = button.getX();
                             Y = button.getY();
@@ -179,7 +193,7 @@ public class Frame extends JFrame {
             }
         }
 
-        this.add(panel);
+        frame.add(panel);
     }
 
 }

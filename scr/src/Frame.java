@@ -1,5 +1,6 @@
 import javax.swing.*;
 import java.awt.*;
+import java.util.Arrays;
 import java.util.concurrent.atomic.AtomicReference;
 
 class Grapisc {
@@ -67,7 +68,7 @@ class Grapisc {
         return -1;
     }
 
-    public static JTextArea Floid(Grapisc[][] graph) {
+    public static int[][] symmetricalArr(Grapisc[][] graph) {
         int len = graph[0].length;
         int[][] arr = new int[len][len];
         for (int i = 0; i < len; i++) {
@@ -76,9 +77,12 @@ class Grapisc {
                 if (i == j) arr[i][j] = -1;
             }
         }
-        arr = makeSymmetric(arr);
+        return makeSymmetric(arr);
+    }
+
+    public static JTextArea Floid(int[][] arr) {
         JTextArea textArea = new JTextArea();
-        textArea.setBounds(10,50,230,400);
+        textArea.setBounds(10,50,230,300);
         for (int i = 0; i < arr.length; i++) {
             for (int j = 0; j < arr[i].length; j++) {
                 textArea.append(arr[i][j] + "  ");
@@ -87,6 +91,86 @@ class Grapisc {
         }
         return textArea;
 
+    }
+    public static JTextArea getFloydWarshallTextArea(int[][] graph) {
+        JTextArea textArea = new JTextArea();
+        int n = graph.length;
+        int[][] dist = new int[n][n];
+
+        for (int i = 0; i < n; i++) {
+            for (int j = 0; j < n; j++) {
+                dist[i][j] = graph[i][j];
+            }
+        }
+
+        for (int k = 0; k < n; k++) {
+            for (int i = 0; i < n; i++) {
+                for (int j = 0; j < n; j++) {
+                    if (dist[i][k] != -1 && dist[k][j] != -1) {
+                        dist[i][j] = Math.min(dist[i][j], dist[i][k] + dist[k][j]);
+                    }
+                }
+            }
+        }
+
+        StringBuilder sb = new StringBuilder();
+        sb.append("Алгоритм Флойда-Варшла:\n\n");
+        for (int i = 0; i < n; i++) {
+            for (int j = 0; j < n; j++) {
+                if (dist[i][j] == -1) {
+                    sb.append("INF\t");
+                } else {
+                    sb.append(dist[i][j] + "\t");
+                }
+            }
+            sb.append("\n");
+        }
+        textArea.setText(sb.toString());
+        textArea.setBounds(10,350,230,300);
+        return textArea;
+    }
+    public static JTextArea getDijkstraTextArea(int[][] graph) {
+        JTextArea textArea = new JTextArea();
+        int n = graph.length;
+        boolean[] visited = new boolean[n];
+        int[] distance = new int[n];
+        Arrays.fill(distance, Integer.MAX_VALUE);
+        distance[0] = 0;
+        for (int i = 0; i < n - 1; i++) {
+            int u = minDistanceVertex(distance, visited);
+            visited[u] = true;
+
+            for (int v = 0; v < n; v++) {
+                if (!visited[v] && graph[u][v] != -1 && distance[u] != Integer.MAX_VALUE &&
+                        distance[u] + graph[u][v] < distance[v]) {
+                    distance[v] = distance[u] + graph[u][v];
+                }
+            }
+        }
+
+        StringBuilder sb = new StringBuilder();
+        sb.append("Dijkstra Algorithm:\n\n");
+        for (int i = 0; i < n; i++) {
+            sb.append(i + " - " + distance[i] + "\n");
+        }
+        textArea.setText(sb.toString());
+
+        return textArea;
+    }
+
+    private static int minDistanceVertex(int[] distance, boolean[] visited) {
+        int n = distance.length;
+        int minDist = Integer.MAX_VALUE;
+        int minVertex = -1;
+
+        for (int v = 0; v < n; v++) {
+            if (!visited[v] && distance[v] < minDist) {
+                minDist = distance[v];
+                minVertex = v;
+            }
+        }
+
+        return minVertex;
     }
 
     public static Grapisc[][] generateTwoDArray(Grapisc[][] graph) {
@@ -143,9 +227,12 @@ public class Frame extends JFrame {
                 JLabel lbl1 = new JLabel("Матриця Вагів:");
                 lbl1.setBounds(10,25,230,25);
                 lbl1.setLayout(null);
-                frame.add(Grapisc.Floid(graphicRef.get()));
+                int[][] FinArray=Grapisc.symmetricalArr(graphicRef.get());
+                frame.add(Grapisc.Floid(FinArray));
                 frame.add(lbl1);
-                frame.repaint(10,50,230,400);
+                frame.add(Grapisc.getFloydWarshallTextArea(FinArray));
+                frame.add(Grapisc.getDijkstraTextArea(FinArray));
+                frame.repaint(10,50,230, frame.getY()-10);
 
             }
         });
